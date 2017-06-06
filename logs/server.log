@@ -1,0 +1,64 @@
+[2017-05-30 15:26:08 +0530] [7302] [INFO] Starting gunicorn 19.7.1
+[2017-05-30 15:26:08 +0530] [7302] [INFO] Starting gunicorn 19.7.1
+[2017-05-30 15:26:08 +0530] [7302] [INFO] Listening at: http://127.0.0.1:5000 (7302)
+[2017-05-30 15:26:08 +0530] [7302] [INFO] Listening at: http://127.0.0.1:5000 (7302)
+[2017-05-30 15:26:08 +0530] [7302] [INFO] Using worker: egg:meinheld#gunicorn_worker
+[2017-05-30 15:26:08 +0530] [7302] [INFO] Using worker: egg:meinheld#gunicorn_worker
+[2017-05-30 15:26:08 +0530] [7338] [INFO] Booting worker with pid: 7338
+[2017-05-30 15:26:08 +0530] [7338] [INFO] Booting worker with pid: 7338
+[2017-05-30 15:26:53 +0530] [7302] [INFO] Handling signal: int
+[2017-05-30 15:26:53 +0530] [7302] [INFO] Handling signal: int
+[2017-05-30 15:26:53 +0530] [7338] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.5/dist-packages/gunicorn/arbiter.py", line 578, in spawn_worker
+    worker.init_process()
+  File "/usr/local/lib/python3.5/dist-packages/gunicorn/workers/base.py", line 131, in init_process
+    self.run()
+  File "/usr/local/lib/python3.5/dist-packages/meinheld/gmeinheld.py", line 46, in run
+    server.run(self.wsgi)
+KeyboardInterrupt
+[2017-05-30 15:26:53 +0530] [7338] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.5/dist-packages/gunicorn/arbiter.py", line 578, in spawn_worker
+    worker.init_process()
+  File "/usr/local/lib/python3.5/dist-packages/gunicorn/workers/base.py", line 131, in init_process
+    self.run()
+  File "/usr/local/lib/python3.5/dist-packages/meinheld/gmeinheld.py", line 46, in run
+    server.run(self.wsgi)
+KeyboardInterrupt
+[2017-05-30 15:26:53 +0530] [7338] [INFO] Worker exiting (pid: 7338)
+[2017-05-30 15:26:53 +0530] [7338] [INFO] Worker exiting (pid: 7338)
+[2017-05-30 15:26:54 +0530] [7302] [INFO] Shutting down: Master
+[2017-05-30 15:26:54 +0530] [7302] [INFO] Shutting down: Master
+[2017-05-30 15:28:10 +0530] [7507] [INFO] Starting gunicorn 19.7.1
+[2017-05-30 15:28:10 +0530] [7507] [INFO] Starting gunicorn 19.7.1
+[2017-05-30 15:28:10 +0530] [7507] [INFO] Listening at: http://127.0.0.1:5000 (7507)
+[2017-05-30 15:28:10 +0530] [7507] [INFO] Listening at: http://127.0.0.1:5000 (7507)
+[2017-05-30 15:28:10 +0530] [7507] [INFO] Using worker: egg:meinheld#gunicorn_worker
+[2017-05-30 15:28:10 +0530] [7507] [INFO] Using worker: egg:meinheld#gunicorn_worker
+[2017-05-30 15:28:10 +0530] [7526] [INFO] Booting worker with pid: 7526
+[2017-05-30 15:28:10 +0530] [7526] [INFO] Booting worker with pid: 7526
+[2017-05-30 15:29:17 +0530] [7507] [INFO] Handling signal: int
+[2017-05-30 15:29:17 +0530] [7507] [INFO] Handling signal: int
+[2017-05-30 15:29:17 +0530] [7526] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.5/dist-packages/gunicorn/arbiter.py", line 578, in spawn_worker
+    worker.init_process()
+  File "/usr/local/lib/python3.5/dist-packages/gunicorn/workers/base.py", line 131, in init_process
+    self.run()
+  File "/usr/local/lib/python3.5/dist-packages/meinheld/gmeinheld.py", line 46, in run
+    server.run(self.wsgi)
+KeyboardInterrupt
+[2017-05-30 15:29:17 +0530] [7526] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.5/dist-packages/gunicorn/arbiter.py", line 578, in spawn_worker
+    worker.init_process()
+  File "/usr/local/lib/python3.5/dist-packages/gunicorn/workers/base.py", line 131, in init_process
+    self.run()
+  File "/usr/local/lib/python3.5/dist-packages/meinheld/gmeinheld.py", line 46, in run
+    server.run(self.wsgi)
+KeyboardInterrupt
+[2017-05-30 15:29:17 +0530] [7526] [INFO] Worker exiting (pid: 7526)
+[2017-05-30 15:29:17 +0530] [7526] [INFO] Worker exiting (pid: 7526)
+[2017-05-30 15:29:18 +0530] [7507] [INFO] Shutting down: Master
+[2017-05-30 15:29:18 +0530] [7507] [INFO] Shutting down: Master

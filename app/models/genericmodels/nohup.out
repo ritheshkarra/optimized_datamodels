@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "TwitterFeed.py", line 71, in <module>
+    main()
+  File "TwitterFeed.py", line 67, in main
+    api.getStream()
+  File "TwitterFeed.py", line 62, in getStream
+    tFeed = tStream.filter(track=['accident', 'fire', 'killing', 'bomb', 'attack', 'stabbing'])
+  File "/home/raghuram/Documents/falcon_app/venv/local/lib/python2.7/site-packages/tweepy/streaming.py", line 445, in filter
+    self._start(async)
+  File "/home/raghuram/Documents/falcon_app/venv/local/lib/python2.7/site-packages/tweepy/streaming.py", line 361, in _start
+    self._run()
+  File "/home/raghuram/Documents/falcon_app/venv/local/lib/python2.7/site-packages/tweepy/streaming.py", line 294, in _run
+    raise exception
+psycopg2.OperationalError: FATAL:  remaining connection slots are reserved for non-replication superuser connections
+

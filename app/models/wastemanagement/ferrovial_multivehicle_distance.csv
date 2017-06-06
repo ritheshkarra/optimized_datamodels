@@ -1,0 +1,4 @@
+vehicle_id,start_lat,start_lng,end_lat,end_lng,capacity,earliest_start,latest_end,max_distance,break,duration
+vehicle1,37.1811867,-3.6050833,37.16742,-3.6052387,5,50000,-1,6000,-1,-1
+vehicle2,37.1811867,-3.6050833,37.16742,-3.6052387,5,50000,-1,5000,-1,-1
+vehicle3,37.1811867,-3.6050833,37.16742,-3.6052387,5,50000,-1,10000,-1,-1
