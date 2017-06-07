@@ -3,7 +3,7 @@ import falcon
 import json
 from app.models.toxic_heavy_gas_dispersion.weatherInfo import WeatherInfo
 from app.models.toxic_heavy_gas_dispersion.airDispersionModelCommander import airDispersionModel
-#from server.logs import logger
+from server.logs import logger
 
 class Weather:
     def on_get(self,req, resp):
@@ -16,7 +16,9 @@ class Weather:
         #output = {"temperature":'+ str(temperature) +', "windBearing":'+str(windBearing)+', "windDirection":'+str(windDirection)+', "windSpeed":'+str(windSpeed)+', "weather":'+str(weather)+', "pressure":'+str(pressure)+', "cloudCoverage":'+str(cloudCoverage)+', "hour":'+str(hour)+', "day":'+str(day)+'}
      except KeyError as e:
         logger.error('Weather Info request ended with exception.{}'.format(e))
-        raise falcon.HTTPError(status="400 Bad Request",title='Weather Information',description='Invalid Request',code=400)
+        resp.status = falcon.HTTP_400
+        resp.body= json.dumps({"Status Code":400,"Description":"Malformed Request","title":"Weather Info"})
+        #raise falcon.HTTPError(status="400 Bad Request",title='Weather Information',description='Invalid Request',code=400)
      output = {}  #Declaring dictiornary variable to empty
      output["temperature"] = temperature
      output["windBearing"] = windBearing
@@ -29,7 +31,10 @@ class Weather:
      output["day"] = day
      if len(output) == 0: #if length is zero, then there is no data available for the request
         logger.info("No data available for requested Lat {} and Long {}".format(lat,lng))
-        raise falcon.HTTPError(status="204 Data Not Avilable",title='Weather Information',description='No data available',code=204)
+        resp.status = falcon.HTTP_204
+        resp.body= json.dumps({"Status Code":204,"Description":"Data Not Available","title":"WeatherInfo"})
+        break
+        #raise falcon.HTTPError(status="204 Data Not Avilable",title='Weather Information',description='No data available',code=204)
      resp.status = falcon.HTTP_200
      resp.body =  json.dumps(output) #output in json format -> browser
 
@@ -44,7 +49,9 @@ class airDispersion:
         airDisp = airDispersionModel() #calling Air Dispersion function where the alogarith is defined and shows in which way gas is travelling
      except KeyError as e:
         logger.error('Air Dispersion request ended with exception.{}'.format(e))
-        raise falcon.HTTPError(status="400 Bad Request",title='Air Dispersion',description='Invalid Request',code=400)
+        resp.status = falcon.HTTP_400
+        resp.body= json.dumps({"Status Code":400,"Description":"Malformed Request","title":"Air Dispersion"})
+        #raise falcon.HTTPError(status="400 Bad Request",title='Air Dispersion',description='Invalid Request',code=400)
      if 'windbearing' in input_params:
             windBearing = input_params['windbearing']
             if 'windspeed' in input_params:
@@ -80,6 +87,8 @@ class airDispersion:
           output["dataSet25"] = "nodata"
      if len(output) == 0:
         logger.info("No data available for requested Lat {} and Long {}".format(lat,lng))
-        raise falcon.HTTPError(status="204 Data Not Avilable",title='Air Dispersion',description='No data available',code=204)
+        resp.status = falcon.HTTP_204
+        resp.body= json.dumps({"Status Code":204,"Description":"Data Not Available","title":"Air Dispersion"})
+        #raise falcon.HTTPError(status="204 Data Not Avilable",title='Air Dispersion',description='No data available',code=204)
      resp.status = falcon.HTTP_200
      resp.body = json.dumps(output)
