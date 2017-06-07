@@ -1,8 +1,10 @@
 #Custom logging setup
 import logging.config
-from server.test import options #From Gunicorn config file importing errorlog and accesslog file location
+#from test import options #From Gunicorn config file importing errorlog and accesslog file location
 
 logger = logging.getLogger('APP') #Creating a global variable for logging which can be used in all files
+errorlog="../logs/server.log"
+accesslog="../logs/access.log"
 
 def setup_logging(level='INFO'):  #Performing INFO level logging. Can be modified
     if level is not None:
@@ -22,14 +24,14 @@ def setup_logging(level='INFO'):  #Performing INFO level logging. Can be modifie
                     'class': 'logging.handlers.RotatingFileHandler',
                     'maxBytes': 102400,
                     'backupCount': 3,
-                    'filename': options[errorlog]
+                    'filename': errorlog
                 },
                'accessfile': {
                     'formatter': 'standard',
                     'class': 'logging.handlers.RotatingFileHandler',
                     'maxBytes': 102400,
                     'backupCount': 3,
-                    'filename': options[accesslog]
+                    'filename': accesslog
                 } 
             },
             'loggers': {

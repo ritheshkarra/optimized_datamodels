@@ -33,7 +33,6 @@ class Weather:
         logger.info("No data available for requested Lat {} and Long {}".format(lat,lng))
         resp.status = falcon.HTTP_204
         resp.body= json.dumps({"Status Code":204,"Description":"Data Not Available","title":"WeatherInfo"})
-        break
         #raise falcon.HTTPError(status="204 Data Not Avilable",title='Weather Information',description='No data available',code=204)
      resp.status = falcon.HTTP_200
      resp.body =  json.dumps(output) #output in json format -> browser

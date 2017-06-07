@@ -4,6 +4,7 @@ import numpy as np
 import os,sys,ast,requests
 from math import radians, cos, sin, asin, sqrt
 import json
+import falcon
 import requests
 import psycopg2
 from server.logs import logger
@@ -48,7 +49,11 @@ class DynamicParking:
             , 'provider', 'providerId', 'geo_pts', 'maxDurationMinutes', 'parkingRate_durationMinutes' \
             , 'parkingRate_farePerMinute', 'zoneType']
         li.append(colms)
-        for item in data['Find']['Result']:
+        if data['Find']['Status'] == "NoResult":
+          logger.info("Data or spaceId is not available")
+          raise Exception("Data or spaceId is not available") 
+        else:
+          for item in data['Find']['Result']:
             elem = item['ParkingSpace']
             sid = elem['sid']
             try:
@@ -89,10 +94,10 @@ class DynamicParking:
                  providerId \
                     , geo_pts, maxDurationMinutes, parkingRate_durationMinutes, parkingRate_farePerMinute, zoneType])
 
-        data_df = pd.DataFrame(li[1:], columns=li[0])
-        return data_df
+          data_df = pd.DataFrame(li[1:], columns=li[0])
+          return data_df
       except Exception as e:
-        logger.error("geo_parking fucntion failed with errors. {}".format(e))
+        logger.error("geo_parking function failed with errors. {}".format(e))
 
     ### 2. a parking will be more important if aggregated score of a pois with smaller distance with high rating ; is high
     ## Google maps based approach
@@ -210,7 +215,7 @@ class DynamicParking:
         ratings,poi_info=self.get_rating(sen_pts,categ,radius)
         return ratings,poi_info,categ
       except Exception as e:
-        logger.error("Unable to gather POI for parking area")
+        logger.error("Unable to gather POI for parking area. {}".format(e))
         '''
         print("getting values")
         mean_rating = pd.DataFrame(ratings).mean()

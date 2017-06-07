@@ -1,5 +1,6 @@
 import json
 import falcon
+from server.logs import logger
 
 class RootResources(object):
     def on_get(self, req, resp):

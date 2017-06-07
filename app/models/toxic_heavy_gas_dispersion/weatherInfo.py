@@ -19,7 +19,7 @@ class WeatherInfo:
 
     def weatherInfo(self,lat,lng):
         #f = requests.get('http://api.wunderground.com/api/b06babfa6f196d38/forecast/conditions/q/'+country+'/'+city+'.json')
-        f = requests.get('http://api.wunderground.com/api/b06babfa6f196d38/forecast/conditions/q/' + str(lat) + ',' + str(lng) + '.json')
+        f = requests.get('http://api.wunderground.com/api/c5d0408ccecafce9/forecast/conditions/q/' + str(lat) + ',' + str(lng) + '.json')
 
         result = f.json()
         temprature = result['current_observation']['temp_c']
