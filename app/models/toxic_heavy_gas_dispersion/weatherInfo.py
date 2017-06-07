@@ -5,6 +5,7 @@ from pandas.io.json import json_normalize
 import datetime
 from dateutil import parser
 from logbook import Logger, StreamHandler
+from server.logs import logger
 import sys
 StreamHandler(sys.stdout).push_application()
 log = Logger('Logbook')
@@ -19,18 +20,20 @@ class WeatherInfo:
 
     def weatherInfo(self,lat,lng):
         #f = requests.get('http://api.wunderground.com/api/b06babfa6f196d38/forecast/conditions/q/'+country+'/'+city+'.json')
-        f = requests.get('http://api.wunderground.com/api/c5d0408ccecafce9/forecast/conditions/q/' + str(lat) + ',' + str(lng) + '.json')
-
-        result = f.json()
-        temprature = result['current_observation']['temp_c']
-        #We need temprature in kevin as well.
-        temprature = temprature + 273.15 # add 273.15 to convert it to kevin scale.
-        windBearing = result['current_observation']['wind_degrees']
-        windDirection = result['current_observation']['wind_dir']
-        windSpeed = result['current_observation']['wind_kph']
-        # forcasted ave wind speed. we will use this value for wind speed in case it fails to get a value
-        avg_windSpeed = result['forecast']['simpleforecast']['forecastday'][0]['avewind']['kph']
-        localTime = result['current_observation']['local_time_rfc822']
+        try:
+          f = requests.get('http://api.wunderground.com/api/c5d0408ccecafce9/forecast/conditions/q/' + str(lat) + ',' + str(lng) + '.json')
+          result = f.json()
+          temprature = result['current_observation']['temp_c']
+          #We need temprature in kevin as well.
+          temprature = temprature + 273.15 # add 273.15 to convert it to kevin scale.
+          windBearing = result['current_observation']['wind_degrees']
+          windDirection = result['current_observation']['wind_dir']
+          windSpeed = result['current_observation']['wind_kph']
+          # forcasted ave wind speed. we will use this value for wind speed in case it fails to get a value
+          avg_windSpeed = result['forecast']['simpleforecast']['forecastday'][0]['avewind']['kph']
+          localTime = result['current_observation']['local_time_rfc822']
+        except exception as e:
+          logger.error("API request to api.wunderground failed. {}".format(e))
         dt = parser.parse(localTime)
         hour = dt.hour
         day = True
@@ -89,15 +92,6 @@ def main():
     gasLeakLat = 19.43000031
     gasLeakLong = -99.09999847
     temprature, windBearing, windDirection, windSpeed, weather,pressure,cloudCoverage,hour,day = wi.weatherInfo(gasLeakLat, gasLeakLong)
-    print(temprature)
-    print(windBearing)
-    print(windDirection)
-    print(windSpeed)
-    print(weather)
-    print(pressure)
-    print(hour)
-    print(day)
-
 
 
 if __name__ == "__main__":

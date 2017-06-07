@@ -40,9 +40,12 @@ class DynamicParking:
         # Real time api for parking
         link = 'https://cdp-jaipur.cisco.com/deveng/fid-CIMQueryInterface?SensorCustomerKey=500001&AppKey=CDP-App&UserKey=500060'
         headers = {'Content-type': 'application/json', 'body': 'raw'}
-        parking_real_time = requests.post(link, data=data_1)
-        # print(parking_real_time.status_code)
-        data = parking_real_time.json()
+        try:
+           parking_real_time = requests.post(link, data=data_1)
+           # print(parking_real_time.status_code)
+           data = parking_real_time.json()
+        except Exception as e:
+           logger.error("API request failed. {}".format(e))
         li = []
         colms = ['sid', 'levelLabel', 'operatedBy', 'label', 'occupied', 'total', 'sensorCustomerId', 'hierId',
                  'siblingIndex' \
@@ -51,7 +54,7 @@ class DynamicParking:
         li.append(colms)
         if data['Find']['Status'] == "NoResult":
           logger.info("Data or spaceId is not available")
-          raise Exception("Data or spaceId is not available") 
+          raise Exception("Data or spaceId is not available. {}".format(e)) 
         else:
           for item in data['Find']['Result']:
             elem = item['ParkingSpace']
@@ -135,14 +138,17 @@ class DynamicParking:
                     link='https://maps.googleapis.com/maps/api/place/search/json?location='+str(pt[0])+','+str(pt[1])+'&radius='+str(radius)+'&type='+cat+'&key='+key[key_i]
                     #link = 'https://maps.googleapis.com/maps/api/place/search/json?location=' + str(pt[0]) + ',' + str(
                     #pt[1]) + '&radius='+str(radius)+'&type=' + cat + '&key=AIzaSyC6zF5CWGqw9Mha4aUrEzFsSYw5n3I3raM'
-                    r = requests.get(link)
-                    if r.json()['status']=='OVER_QUERY_LIMIT':
-                        if key_i == 2:
-                           key_i=0
-                        else:
-                           key_i+=1
-                    else:
-                           break
+                    try:
+                       r = requests.get(link)
+                       if r.json()['status']=='OVER_QUERY_LIMIT':
+                         if key_i == 2:
+                            key_i=0
+                         else:
+                            key_i+=1
+                       else:
+                            break
+                    except Exception as e:
+                       logger.error("Failed to contact google maps. {}".format(e))
                 jsn = r.json()['results']
                 li = []
                 for poi in jsn:
