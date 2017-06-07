@@ -123,8 +123,8 @@ class DynamicParkingBasedOnSurrounding(object):
         for cat in categ:
             for index,row in poi_info[spaceId][cat].iterrows():
                 if str(row['rating']) == "nan":
-                    row['rating'] = 'NULL'
-                poid = {"name": row['name'], "location": row['loc'], "rating": row['rating'], "distance": str(row['dist(km)'])[:6],"isOpen":row['is_open']}
+                    row['rating'] = 0
+                poid = {"name": row['name'], "location": row['loc'], "rating": row['rating'], "distance": round(row['dist(km)'],6), "isOpen":row['is_open']}
                 poi.append(poid)
         pr = []
         for i in ratings[spaceId]:
@@ -138,7 +138,7 @@ class DynamicParkingBasedOnSurrounding(object):
            resp.body= json.dumps({"Status Code":204,"Description":"No data available","title":"Dynamic Parking Space"})
            #raise falcon.HTTPError(status="204 Data Not Avilable",title='Dynamic Parking Space',description='No data available',code=204)
         output["poi"] = poi
-        output["prakingRate"]=pr
+        #output["prakingRate"]=pr
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(output)
      except KeyError as e:
