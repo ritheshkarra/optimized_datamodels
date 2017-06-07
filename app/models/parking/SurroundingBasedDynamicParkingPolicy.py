@@ -6,24 +6,31 @@ from math import radians, cos, sin, asin, sqrt
 import json
 import requests
 import psycopg2
+from server.logs import logger
 #from IPython.display import display,HTML
 os.environ['TZ'] = 'Asia/Kolkata'
 
 class DynamicParking:
 
     def getDBConnection(self, psqlhost, databaseName, userName, password):
+     try:
+        logger.info("Establishing connnection to Postgres")
         psqlConnection = psycopg2.connect(host=psqlhost, dbname=databaseName, user=userName, password=password)
         marker = psqlConnection.cursor();
         return marker
+     except Exception as e:
+        logger.error("Error in creating connection to DataBase. {}".format(e))
 
     def get_geo_parking(self,spaceId):
+      try:
+        logger.info("Executing get_geo_parking function")
         import requests
         data_1 = json.dumps({
             "Query": {
                 "Find": {
                     "ParkingSpace": {
                         "sid": {
-                            "eq": "spaceId"
+                            "eq": spaceId
                         }
                     }
                 }
@@ -84,6 +91,8 @@ class DynamicParking:
 
         data_df = pd.DataFrame(li[1:], columns=li[0])
         return data_df
+      except Exception as e:
+        logger.error("geo_parking fucntion failed with errors. {}".format(e))
 
     ### 2. a parking will be more important if aggregated score of a pois with smaller distance with high rating ; is high
     ## Google maps based approach
@@ -107,40 +116,57 @@ class DynamicParking:
         return km
 
     # getting important params from  google places api
-    def get_reviews(self,sen_pts, categ, label='mean_position'):
+    def get_reviews(self,sen_pts,categ,radius,label='mean_position'):
+      try:
+        logger.info("Getting parking reviews for geo points with in the radius")
         poi_pos = {}
         for i in range(sen_pts.shape[0]):
             poi_pos_1 = {}
             for cat in categ:
                 pt = sen_pts.iloc[i][label]
-                link = 'https://maps.googleapis.com/maps/api/place/search/json?location=' + str(pt[0]) + ',' + str(
-                    pt[1]) + '&radius=500&type=' + cat + '&key=AIzaSyC6zF5CWGqw9Mha4aUrEzFsSYw5n3I3raM'
-                r = requests.get(link)
+                key=['AIzaSyCS-RjgQk-XsuyTiaRTh040D9iibCsW9zQ','AIzaSyDoZZaxE3da9nD2U2GzC3xs1FWDywWkOiI','AIzaSyC6zF5CWGqw9Mha4aUrEzFsSYw5n3I3raM']
+                key_i=0
+                while True:
+                    link='https://maps.googleapis.com/maps/api/place/search/json?location='+str(pt[0])+','+str(pt[1])+'&radius='+str(radius)+'&type='+cat+'&key='+key[key_i]
+                    #link = 'https://maps.googleapis.com/maps/api/place/search/json?location=' + str(pt[0]) + ',' + str(
+                    #pt[1]) + '&radius='+str(radius)+'&type=' + cat + '&key=AIzaSyC6zF5CWGqw9Mha4aUrEzFsSYw5n3I3raM'
+                    r = requests.get(link)
+                    if r.json()['status']=='OVER_QUERY_LIMIT':
+                        if key_i == 2:
+                           key_i=0
+                        else:
+                           key_i+=1
+                    else:
+                           break
                 jsn = r.json()['results']
-        li = []
-        for poi in jsn:
-         try:
-          is_open = poi['opening_hours']['open_now']
-         except:
-          is_open = True
-         types = poi['types']
-         loc = [poi['geometry']['location']['lat'], poi['geometry']['location']['lng']]
-         name=poi['name']
-         try:
-          rating = poi['rating']
-         except:
-          rating = np.nan
-         dist = self.haversine(pt, loc)
-         li.append([name,is_open, types, loc, rating, dist])
-         poi_pos_1[cat] = pd.DataFrame(li, columns=['name','is_open', 'types', 'loc', 'rating', 'dist(km)'])
-         poi_pos[sen_pts.index[i]] = poi_pos_1
+                li = []
+                for poi in jsn:
+                  try:
+                     is_open = poi['opening_hours']['open_now']
+                  except:
+                     is_open = True
+                  types = poi['types']
+                  loc = [poi['geometry']['location']['lat'], poi['geometry']['location']['lng']]
+                  name=poi['name']
+                  try:
+                    rating = poi['rating']
+                  except:
+                    rating = np.nan
+                  dist = self.haversine(pt, loc)
+                  li.append([name,is_open, types, loc, rating, dist])
+                poi_pos_1[cat] = pd.DataFrame(li, columns=['name','is_open', 'types', 'loc', 'rating', 'dist(km)'])
+            poi_pos[sen_pts.index[i]] = poi_pos_1
         return poi_pos
+      except Exception as e:
+        logger.error("Failed to get review for parking. {}".format(e))
 
     # combining  results to get single index
     #Categories to invest in
 
-    def get_rating(self,sen_pts, categ):
-        poi_pos = self.get_reviews(sen_pts, categ)
+    def get_rating(self,sen_pts, categ,radius):
+     try:
+        logger.info("Finding parking rate for categories")
+        poi_pos = self.get_reviews(sen_pts,categ,radius)
         net_res = {}
         for key in poi_pos.keys():
             temp = poi_pos[key]
@@ -153,7 +179,9 @@ class DynamicParking:
                 except:
                     res_temp[cat] = np.nan
             net_res[key] = res_temp
-        return (net_res,poi_pos)
+        return net_res,poi_pos
+     except Exception as e:
+        logger.error("Failed to find parking rate. {}".format(e))
 
     def conv_2_list(self,row):
         geo_pts = []
@@ -162,6 +190,8 @@ class DynamicParking:
         return geo_pts
 
     def poi(self,spaceId,radius):
+      try:
+        logger.info("Finding point of Interest on Parking for spaceid") 
         #dp = DynamicParking()
         '''marker = dp.getDBConnection("52.55.107.13", "cdp", "sysadmin", "sysadmin")
         marker.execute("""select sid, state, providerdetails, boundary, label, levellabel, ts from parking_space""")
@@ -170,6 +200,7 @@ class DynamicParking:
         geo_pts['geo_pts'] = geo_pts['geo_pts'].apply(lambda x: ast.literal_eval(x))
         geo_pts['geo_pts'] = geo_pts['geo_pts'].apply(lambda x: dp.conv_2_list(x))
         print("line after getting data from db")'''
+        logger.info("Fetching Lat and Longs for spaceId")
         geo_pts = self.get_geo_parking(spaceId)
         geo_pts['mean_position'] = geo_pts['geo_pts'].apply(lambda x: [np.mean([i[0] for i in x]), np.mean([i[1] for i in x])])
         sen_pts = geo_pts.groupby('sid').agg({'mean_position': 'first'})
@@ -178,6 +209,8 @@ class DynamicParking:
         print("Now going to fetch ratings")
         ratings,poi_info=self.get_rating(sen_pts,categ,radius)
         return ratings,poi_info,categ
+      except Exception as e:
+        logger.error("Unable to gather POI for parking area")
         '''
         print("getting values")
         mean_rating = pd.DataFrame(ratings).mean()
@@ -188,6 +221,6 @@ class DynamicParking:
         sss = json.loads(ss)
         print(sss)'''
 
-if== "__main__":
+if __name__== "__main__":
     dp = DynamicParking()
     dp.poi('ParkingSpace__metro__Bldg1Flr7',50)

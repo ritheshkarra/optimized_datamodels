@@ -8,18 +8,25 @@ import itertools
 import requests
 import psycopg2
 import ast
+import datetime
+from server.logs import logger
 #from IPython.display import display,HTML
 os.environ['TZ'] = 'Asia/Kolkata'
 
 class NextParkingSpace:
 
     def getDBConnection(self, psqlhost, databaseName, userName, password):
+      try:
+        logger.info("Establishing connnection to Postgres")
         psqlConnection = psycopg2.connect(host=psqlhost, dbname=databaseName, user=userName, password=password)
+        logger.info("Connected to postgres")
         marker = psqlConnection.cursor();
         return marker
-
+      except Exception as e:
+        logger.error("Error in creating connection to DataBase. {}".format(e))
 
     def get_geo_parking(self):
+      try:
         data_1=json.dumps({
         "Query":{
         "Find":{
@@ -83,10 +90,15 @@ class NextParkingSpace:
 
         data_df=pd.DataFrame(li[1:],columns=li[0])
         return data_df
+      except Exception as e:
+        logger.error("geo_parking fucntion failed with errors. {}".format(e))
     
     def create_data_1(self,dictionary,path_to_save=None):
+      try:
+        logger.info("Getting RWS values from dictionary")
         RWS=dictionary['RWS']
         l=[]
+        logger.info("Extracting values from RWS to create DataFrames")
         for rw in RWS:
             EBU_COUNTRY_CODE=rw['EBU_COUNTRY_CODE']
             EXTENDED_COUNTRY_CODE=rw['EXTENDED_COUNTRY_CODE']
@@ -114,8 +126,10 @@ class NextParkingSpace:
                             SU=elem_3['SU']
                             TY=elem_3['TY']
                             l.append([EBU_COUNTRY_CODE,EXTENDED_COUNTRY_CODE,UNITS,DE,LI,PBT,mid,LE,PC,QD,SHP,FF,CN,JF,SP,SU,TY])
+        logger.info("Adding columns to DataFrames")
         clms=['EBU_COUNTRY_CODE','EXTENDED_COUNTRY_CODE','UNITS','DE','LI','PBT','mid','LE','PC','QD','SHP','FF','CN','JF','SP','SU','TY']
         df=pd.DataFrame(l,columns=clms)
+        logger.info("Created DataFrame")
         df['PBT']=datetime.datetime.now()
         #print(json.dumps(rws_list, indent=2))
         if path_to_save:
@@ -125,23 +139,35 @@ class NextParkingSpace:
                 df.to_csv(path_to_save,mode='w',index=False)
         else:
             return df   
+      except Exception as e:
+        logger.error("Error in creating DataFrames. {}".format(e))
  
     def get_road_info(self,point,radius=50):
+       try:
+        logger.info("Getting road info")
         link='https://traffic.cit.api.here.com/traffic/6.1/flow.json?prox='+str(point[0])+'%2C'+str(point[1])+'%2C'+str(radius)+'&responseattributes=sh,fc&app_id=ONe0616Q1jK0RLmeN7fc&app_code=bWQ6Eir1V2KRjaS-5oMOcw'
         r=requests.get(link)
         road=self.create_data_1(r.json())[['DE','SHP']]
         return road.drop_duplicates(subset='DE')
+       except Exception as e:
+        logger.error("Failed to get road info. {}".format(e))
  
 
     def get_route_info(self, point_1,point_2,mode=['fastest','car'],app_id='QacvSHflGqkVBJGvs9OS',app_code='9dbgDyDrC1ChasubHX7Xfw',traffic_mode='enabled'):
+     try:
+        logger.info("Getting Route info")
         #mode='list of modes['fastest','car']
         link='https://route.cit.api.here.com/routing/7.2/calculateroute.json?waypoint0='+str(point_1[0][0])+'%2C'+str(point_1[0][1])+'&waypoint1='+str(point_2[0][0])+'%2C'+str(point_2[0][1])+'&mode='+'%3B'.join(str(e) for e in mode)+'%3Btraffic%3A'+traffic_mode+'&app_id='+app_id+'&app_code='+app_code+'&departure=now'
         r=requests.get(link)
         jsn=r.json()
         summary=jsn['response']['route'][0]['summary']
         return summary['trafficTime'],summary['travelTime'],summary['distance']
+     except Exception as e:
+        logger.error("Error in finding route info. {}".format(e))
 
     def get_traffic_info(self,data,grouping_cols='sid'):
+     try:
+        logger.info("Getting traffic info")
         dist_stat={}
         #get traffic info travel time and distance
         sen_pos=data.groupby(grouping_cols).agg({'geo_pts':'first'})
@@ -166,14 +192,19 @@ class NextParkingSpace:
         dist_stat['travel_time']=travel_time_df
         dist_stat['traffic_time']=traffic_time_df
         return dist_stat
+     except Exception as e:
+       logger.error("Failed to get traffic info. {}".format(e))
 
     def conv_2_list(self,row):
+        logger.info("converting to list")
         geo_pts = []
         for elem_1 in row['geoPoint']:
             geo_pts.append([elem_1['latitude'], elem_1['longitude']])
         return geo_pts
 
     def next_parkingspace_main(self,spaceId,radius):
+     try:
+        logger.info("Finding next parking space name for spaceid")
         #nps = NextParkingSpace()
         marker = self.getDBConnection("52.55.107.13", "cdp", "sysadmin" ,"sysadmin")
         query="select sid, state, providerdetails, boundary, label, levellabel, ts from parking_space where sid = '" + spaceId + "'"
@@ -188,6 +219,8 @@ class NextParkingSpace:
         #dist_stat=self.get_traffic_info(data)
         #road_inf=data['mean_position'].apply(lambda x:  self.get_road_info(x,radius))
         return self.get_road_info(data['mean_position'][0],radius)
+     except Exception as e:
+        logger.error("Failed to find next parking space name. {}".format(e))
         '''
         ## minimum distance`
         dist_stat['dist'][dist_stat['dist']==0]=np.nan
