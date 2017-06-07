@@ -3,7 +3,7 @@ import json
 import falcon
 from falcon import HTTPBadRequest
 from app.models.light.LightIntensityBasedOnSun import LightIntensityBasedOnSun
-#from server.logs import logger
+from server.logs import logger
 
 class lightIntensity:
     def on_get(self, req, resp):
@@ -20,10 +20,16 @@ class lightIntensity:
               resp.body = json.dumps(jsonoutput) #sending data to browser in json format
               if len(resp.body) == 0: #If the resp.body is empty(the request doesnt have data, it shows no data available)
                 logger.info("No data available for location {}.".format(location))
-                raise falcon.HTTPError(status="204 Data Not Avilable",title='LightIntensity',description='No data available',code=204)
+                resp.status = falcon.HTTP_204
+                resp.body= json.dumps({"Status Code":204,"Description":"Data not available","title":"Light Intensity"})
+                #raise falcon.HTTPError(status="204 Data Not Avilable",title='LightIntensity',description='No data available',code=204)
         except KeyError as e:
               logger.error('Request doesnt have all the required parameters.{}'.format(e))
-              raise falcon.HTTPError(status="400 Bad Request",title='LightIntensity',description='The requested URL is not correct',code=400)
+              resp.status = falcon.HTTP_400
+              resp.body= json.dumps({"Status Code":400,"Description":"Malformed Request","title":"Light Intensity"})
+              #raise falcon.HTTPError(status="400 Bad Request",title='LightIntensity',description='The requested URL is not correct',code=400)
         except Exception as e:
               logger.error('Exception at Light intensity end point.{}'.format(e))
-              raise falcon.HTTPError(status="500 Internal Server Error",title='LightIntensity',description='Internal Server Error',code=500)
+              resp.status = falcon.HTTP_500
+              resp.body= json.dumps({"Status Code":500,"Description":"Internal Server Error","title":"Light Intensity"})
+              #raise falcon.HTTPError(status="500 Internal Server Error",title='LightIntensity',description='Internal Server Error',code=500)

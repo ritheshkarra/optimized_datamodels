@@ -4,16 +4,24 @@ import requests
 from datetime import datetime, timedelta
 import pandas as pd
 import os
+from server.logs import logger
 from dateutil.parser import parse
 
 #os.environ['TZ']="America/New_York"
 #os.environ['TZ']='Newyork'
 class LightIntensityBasedOnSun:
     def forecast(self,location,offset):
+     try:
+        logger.info("Getting Latitude and Longitude from map API for location")
         # Getting Latitude and Longitude from HERE map API
         result_1 = requests.get(
             'https://geocoder.cit.api.here.com/6.2/geocode.json?searchtext=' + location + '/&app_id=QacvSHflGqkVBJGvs9OS&app_code=9dbgDyDrC1ChasubHX7Xfw&gen=8')
-        out_1 = result_1.json()
+        try:
+          out_1 = result_1.json()
+          if len(out_1) == 0:
+            logger.info("No lat and long available for location")
+        except Exception as e:
+            logger.error("Failed with error. {} ".format(e))
         Latitude = out_1['Response']['View'][0]['Result'][0]['Location']['NavigationPosition'][0]['Latitude']
         Longitude = out_1['Response']['View'][0]['Result'][0]['Location']['NavigationPosition'][0]['Longitude']
         # Getting Sunrise and Sunset from Dark Sky API
@@ -21,8 +29,11 @@ class LightIntensityBasedOnSun:
         result_2 = requests.get(
             'https://api.darksky.net/forecast/f837b14f3e53cfed0e7cec9e3765e3c5/' + str(Latitude) + ',' + str(
                 Longitude) + '/?exclude=currently,minutely?extend=hourly')
-        out_2 = result_2.json()
-
+        try:
+           logger.info("getting Sunrise and Sunset for location")
+           out_2 = result_2.json()
+        except Exception as e:
+           logger.error("Failed to get Sunrise and Sunset. {} ".format(e))
         sunrise_time = []
         sunset_time = []
         dates = []
@@ -72,11 +83,13 @@ class LightIntensityBasedOnSun:
             on_utc = i.strftime("%Y-%m-%dT%H:%M:%S.%f%Z")
             ee_2.append(on_utc)
         Data['On_time'] = pd.DataFrame(ee_2)
-        print(Data)
         return (Data)
+     except Exception as e:
+        logger.error("Error in function forecast. {}".format(e))
 
 def main():
     l = LightIntensityBasedOnSun()
+    logger.info("calling forecast method")
     s = l.forecast("Banglore", 10)
     output = {}
     #output['data'] = json.loads(s.to_json(orient='records', date_format='iso', date_unit='ms'))
