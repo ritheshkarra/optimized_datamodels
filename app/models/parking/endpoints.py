@@ -77,11 +77,12 @@ class NextPSpace(object):
             radius=50
         nps = NextParkingSpace()
         marker = nps.getDBConnection("52.55.107.13", "cdp", "sysadmin" ,"sysadmin")
-        query="select label from parking_space where sid=(select nearparkingspace from next_parking_space where parkingsapce='"+ spaceId +"')"
+        query="select label.boundary from parking_space where sid=(select nearparkingspace from next_parking_space where parkingsapce='"+ spaceId +"')"
         marker.execute(query)
         data=marker.fetchall()
+        loc=json.loads(data[0][1]) #Loading string formatted dictionary to json for converting it to Dictionary object
         output = {}
-        output["nearBySpace"]=[{"spaceName":data[0][0]}]
+        output["nearBySpace"]={"spaceName":data[0][0],"location":[loc['geoPoint'][0]['latitude'],loc['geoPoint'][0]['longitude']]}
         rd=nps.next_parkingspace_main(spaceId,radius)
         le = []
         for index, row in rd.iterrows():
