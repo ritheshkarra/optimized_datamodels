@@ -80,7 +80,12 @@ class NextPSpace(object):
             logger.info("Radius value not passed through request url so setting it to 50 by default")
             radius=50
         nps = NextParkingSpace()
+        marker = nps.getDBConnection("52.55.107.13", "cdp", "sysadmin" ,"sysadmin")
+        query="select label from parking_space where sid=(select nearparkingspace from next_parking_space where parkingsapce='"+ spaceId +"')"
+        marker.execute(query)
+        data=marker.fetchall()
         output = {}
+        output["nearBySpace"]=[{"spaceName":data[0][0]}]
         rd=nps.next_parkingspace_main(spaceId,radius)
         le = []
         for index, row in rd.iterrows():
