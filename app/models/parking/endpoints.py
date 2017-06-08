@@ -38,22 +38,18 @@ class ParkingPredictions(object):
            logger.info('No data available for location {}.'.format(location))
            resp.status = falcon.HTTP_204
            resp.body= json.dumps({"Status Code":204,"Description":"Data not available","title":"Parking Predictions"})
-           #raise falcon.HTTPError(status="204 Data Not Avilable",title='Parking Predictions',description='No data available',code=204)
       except KeyError as e:
         logger.error('Parking predictions ended with exception.{}'.format(e))
         resp.status = falcon.HTTP_400
         resp.body= json.dumps({"Status Code":400,"Description":"Invalid Request","title":"Parking Predictions"})
-        #raise falcon.HTTPError(status="400 Bad Request",title='Parking Predictions',description='Invalid Request',code=400)
       except FileNotFoundError as e:
         logger.error('Error loading pickle file.{}'.format(e))
         resp.status = falcon.HTTP_404
         resp.body= json.dumps({"Status Code":404,"Description":"File not found","title":"Parking Predictions"})
-        #raise falcon.HTTPError(status="404 Not found",title='Parking Predictions',description='Not Found',code='404')
       except Exception as e:
          logger.error('Unknow exception at parking predictions.{}'.format(e))
          resp.status = falcon.HTTP_500
          resp.body= json.dumps({"Status Code":500,"Description":"Internal Server Error","title":"Parking Predictions"})
-         #raise falcon.HTTPError(status="500 Internal Server Error",title='Parking Predictions',description='Internal Server Error',code='500')
       forecast_values = {}
       for parking_space in models.keys():
           if parkingspaceid == "all":
@@ -98,17 +94,18 @@ class NextPSpace(object):
            logger.info('No data available for spaceID {}.'.format(spaceId))
            resp.status = falcon.HTTP_204
            resp.body= json.dumps({"Status Code":204,"Description":"Data Not Available","title":"Next Parking Space"})
-           #raise falcon.HTTPError(status="204 Data Not Avilable",title='Next Parking Space',description='No data available',code=204)
      except KeyError as e:
         logger.error('Invalid Request.{}'.format(e))
         resp.status = falcon.HTTP_400
         resp.body= json.dumps({"Status Code":400,"Description":"Invalid Request","title":"Next Parking Space"})
-        #raise falcon.HTTPBadRequest(status="400 Bad Request",title='Next Parking Space',description='Invalid Request',code=400)
+     except psycopg2.OperationalError as e:
+        logger.error('Failed to execute DB Query.{}'.format(e))
+        resp.status = falcon.HTTP_408
+        resp.body= json.dumps({"Status Code":408,"Description":"Connection Timed Out","title":"Next Parking Space"})
      except Exception as e:
         logger.info('Next Parking Space ended up with error .{}'.format(e))
         resp.status = falcon.HTTP_500
         resp.body= json.dumps({"Status Code":500,"Description":"Internal Server Error","title":"Next Parking Space"})
-        #raise falcon.HTTPError(status='500 Internal Server Error',title='Next Parking Space',description='Internal Server Error',code=500)     
      
       
 class DynamicParkingBasedOnSurrounding(object):
@@ -141,19 +138,16 @@ class DynamicParkingBasedOnSurrounding(object):
            logger.info('No data available for location {}.'.format(spaceId))
            resp.status = falcon.HTTP_204
            resp.body= json.dumps({"Status Code":204,"Description":"No data available","title":"Dynamic Parking Space"})
-           #raise falcon.HTTPError(status="204 Data Not Avilable",title='Dynamic Parking Space',description='No data available',code=204)
         output["poi"] = poi
         #output["prakingRate"]=pr
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(output)
      except KeyError as e:
         logger.error('Invalid Request.{}'.format(e))
-        #raise falcon.HTTPBadRequest(status="400 Bad Request",title='Dynamic Parking Space',description='Invalid Request',code=400)
         resp.status = falcon.HTTP_400
         resp.body= json.dumps({"Status Code":400,"Description":"Invalid Request","title":"Dynamic Parking Space"})
      except Exception  as e:
         logger.info('Unable to fetch Dynamic Parking for spaceId.{}'.format(e))
-        #raise falcon.HTTPError(status='500 Internal Server Error',title='Dynamic Parking Space',description='Internal Server Error',code=500)
         resp.status = falcon.HTTP_500
         resp.body= json.dumps({"Status Code":500,"Description":"Internal Server Error","title":"Dynamic Parking Space"})
 
@@ -170,24 +164,20 @@ class CompParking(object):
         logger.error('Invalid Request.{}'.format(e))
         resp.status = falcon.HTTP_400
         resp.body= json.dumps({"Status Code":400,"Description":"Invalid Request","title":"Comp Parking Space"})
-        #raise falcon.HTTPBadRequest(status="400 Bad Request",title='Comp Parking',description='Invalid Request',code=400)
      except psycopg2.OperationalError as e:
         logger.error('Failed to execute DB Query.{}'.format(e))
         resp.status = falcon.HTTP_408
         resp.body= json.dumps({"Status Code":408,"Description":"Connection Timed Out","title":"Comp Parking Space"})
-        #raise falcon.HTTPError(status='408 Timed Out',title='Comp Parking SPace',description='Internal Server Error',code=408)
      except Exception as e:
         logger.error('Comp Parking Space ended with Error .{}'.format(e))
         resp.status = falcon.HTTP_500
         resp.body= json.dumps({"Status Code":500,"Description":"Internal Server Error","title":"Comp Parking Space"})
-        #raise falcon.HTTPBadRequest(status='500 Internal Server ,title='Comp Parking Space',description='Internal Server Error',code=500)
 
      out = marker.fetchall()
      if len(out) == 0: #If length of out is zero, which means no data available for the DB query executed so resultant will raise HTTP 204 code
            logger.info('No data available for location {}.'.format(spaceId))
            resp.status = falcon.HTTP_204
            resp.body= json.dumps({"Status Code":204,"Description":"No data available","title":"Comp Parking Space"})
-           #raise falcon.HTTPError(status="204 Data Not Avilable",title='Comp Parking Space',description='No data available',code=204)
      output = {}
      for i in out:
          output["parkingSpace"] = i[0]
